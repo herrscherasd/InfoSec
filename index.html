@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marketplace Payment</title>
+  <style>
+    :root {
+      --ink: #16202a;
+      --muted: #687789;
+      --line: #dbe3ea;
+      --field: #f8fafc;
+      --accent: #0f8f83;
+      --accent-strong: #087267;
+      --gold: #f7bd3c;
+      --danger: #c24136;
+      --page: #f2f6f7;
+      --panel: #ffffff;
+      --shadow: 0 24px 70px rgba(20, 40, 54, 0.14);
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(15, 143, 131, 0.14), transparent 30%),
+        linear-gradient(135deg, #f8fbfb 0%, var(--page) 54%, #edf3f2 100%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 40px 20px;
+    }
+
+    .checkout {
+      width: min(1040px, 100%);
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      overflow: hidden;
+      border: 1px solid rgba(219, 227, 234, 0.92);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .summary {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 660px;
+      padding: 34px;
+      color: #f8fbfb;
+      background:
+        linear-gradient(rgba(13, 48, 50, 0.72), rgba(13, 48, 50, 0.82)),
+        url("data:image/svg+xml,%3Csvg width='880' height='880' viewBox='0 0 880 880' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='880' height='880' fill='%230f665f'/%3E%3Cg opacity='.34'%3E%3Cpath d='M0 170h880v18H0zM0 347h880v18H0zM0 524h880v18H0zM0 701h880v18H0z' fill='%23f7bd3c'/%3E%3Cpath d='M140 0h18v880h-18zM317 0h18v880h-18zM494 0h18v880h-18zM671 0h18v880h-18z' fill='%23ffffff'/%3E%3C/g%3E%3Cg opacity='.25'%3E%3Ccircle cx='152' cy='168' r='92' fill='%23ffffff'/%3E%3Ccircle cx='706' cy='646' r='142' fill='%23f7bd3c'/%3E%3Ccircle cx='470' cy='238' r='64' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #f8fbfb;
+      color: var(--accent-strong);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+    }
+
+    .summary h1 {
+      max-width: 360px;
+      margin: 70px 0 18px;
+      font-size: clamp(2.2rem, 5vw, 4.25rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .summary p {
+      max-width: 360px;
+      margin: 0;
+      color: rgba(248, 251, 251, 0.78);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .cart {
+      display: grid;
+      gap: 14px;
+      margin-top: 48px;
+    }
+
+    .cart-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(248, 251, 251, 0.2);
+    }
+
+    .cart-row span {
+      color: rgba(248, 251, 251, 0.74);
+      font-size: 0.92rem;
+    }
+
+    .cart-row strong {
+      white-space: nowrap;
+    }
+
+    .cart-row.total {
+      font-size: 1.5rem;
+    }
+
+    .payment {
+      padding: 42px;
+    }
+
+    .payment-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .payment-header h2 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      letter-spacing: 0;
+    }
+
+    .payment-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .secure-badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--accent-strong);
+      background: #f6fbfa;
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .card-preview {
+      position: relative;
+      overflow: hidden;
+      min-height: 210px;
+      margin-bottom: 30px;
+      padding: 24px;
+      border-radius: 8px;
+      color: #ffffff;
+      background:
+        linear-gradient(140deg, rgba(13, 32, 43, 0.92), rgba(13, 116, 105, 0.95)),
+        linear-gradient(90deg, rgba(247, 189, 60, 0.4), transparent);
+      box-shadow: 0 18px 42px rgba(15, 72, 70, 0.25);
+    }
+
+    .card-preview::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      bottom: -92px;
+      width: 250px;
+      height: 250px;
+      border: 36px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+    }
+
+    .card-top,
+    .card-bottom {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .chip {
+      width: 52px;
+      height: 38px;
+      border-radius: 7px;
+      background:
+        linear-gradient(90deg, transparent 47%, rgba(123, 91, 18, 0.28) 48% 52%, transparent 53%),
+        linear-gradient(#f7d87b, #dca733);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .network {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+    }
+
+    .network i {
+      width: 24px;
+      height: 24px;
+      display: block;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .network i:last-child {
+      margin-left: -12px;
+      background: rgba(247, 189, 60, 0.82);
+    }
+
+    .preview-number {
+      position: relative;
+      z-index: 1;
+      margin: 44px 0 32px;
+      font-size: clamp(1.35rem, 4vw, 1.9rem);
+      letter-spacing: 0.08em;
+      word-spacing: 0.22em;
+    }
+
+    .card-label {
+      display: block;
+      margin-bottom: 4px;
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: #344354;
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    input {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 15px;
+      color: var(--ink);
+      background: var(--field);
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    input::placeholder {
+      color: #9aa8b5;
+    }
+
+    input:focus {
+      border-color: rgba(15, 143, 131, 0.75);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(15, 143, 131, 0.12);
+    }
+
+    .options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 2px 0 4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 650;
+    }
+
+    .checkbox input {
+      width: 18px;
+      min-height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .help {
+      color: var(--accent-strong);
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .pay-button {
+      min-height: 56px;
+      border: 0;
+      border-radius: 7px;
+      color: #ffffff;
+      background: var(--accent);
+      box-shadow: 0 14px 26px rgba(15, 143, 131, 0.26);
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 850;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .pay-button:hover {
+      transform: translateY(-1px);
+      background: var(--accent-strong);
+      box-shadow: 0 18px 32px rgba(15, 143, 131, 0.32);
+    }
+
+    .fine-print {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .fine-print strong {
+      color: var(--ink);
+    }
+
+    @media (max-width: 840px) {
+      .page {
+        padding: 20px;
+      }
+
+      .checkout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        min-height: auto;
+        padding: 28px;
+      }
+
+      .summary h1 {
+        margin-top: 44px;
+      }
+
+      .payment {
+        padding: 28px;
+      }
+
+      .payment-header {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        padding: 0;
+        place-items: stretch;
+      }
+
+      .checkout {
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .options {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .summary,
+      .payment {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="checkout" aria-label="Marketplace card checkout">
+      <aside class="summary">
+        <div>
+          <div class="brand">
+            <div class="mark" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5 9.5 12 5l7 4.5v8.2a1.8 1.8 0 0 1-1.8 1.8H6.8A1.8 1.8 0 0 1 5 17.7V9.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="m8.5 11.5 3.5 2 3.5-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            Marketlane
+          </div>
+
+          <h1>Complete your order</h1>
+          <p>Fast checkout for marketplace purchases, seller services, and buyer protection in one clean payment step.</p>
+        </div>
+
+        <div class="cart" aria-label="Order summary">
+          <div class="cart-row">
+            <span>Premium listing bundle</span>
+            <strong>$84.00</strong>
+          </div>
+          <div class="cart-row">
+            <span>Buyer protection</span>
+            <strong>$6.50</strong>
+          </div>
+          <div class="cart-row">
+            <span>Processing</span>
+            <strong>$2.25</strong>
+          </div>
+          <div class="cart-row total">
+            <span>Total</span>
+            <strong>$92.75</strong>
+          </div>
+        </div>
+      </aside>
+
+      <section class="payment">
+        <div class="payment-header">
+          <div>
+            <h2>Card details</h2>
+            <p>Enter your payment information to place the order securely.</p>
+          </div>
+          <span class="secure-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 10V8a6 6 0 1 1 12 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Secure
+          </span>
+        </div>
+
+        <div class="card-preview" aria-hidden="true">
+          <div class="card-top">
+            <div class="chip"></div>
+            <div class="network"><i></i><i></i></div>
+          </div>
+          <div class="preview-number" id="previewNumber">4242 4242 4242 4242</div>
+          <div class="card-bottom">
+            <div>
+              <span class="card-label">Card holder</span>
+              <strong id="previewName">ALEX MORGAN</strong>
+            </div>
+            <div>
+              <span class="card-label">Expires</span>
+              <strong id="previewDate">12/28</strong>
+            </div>
+          </div>
+        </div>
+
+        <form action="/pay" method="POST">
+          <label>
+            Cardholder name
+            <input id="nameInput" name="name" type="text" autocomplete="cc-name" placeholder="Alex Morgan" maxlength="32">
+          </label>
+
+          <label>
+            Card number
+            <input id="numberInput" name="number" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242" maxlength="19">
+          </label>
+
+          <div class="field-grid">
+            <label>
+              Expiration date
+              <input id="dateInput" name="exp" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5">
+            </label>
+
+            <label>
+              CVC
+              <input type="password" name="code" inputmode="numeric" autocomplete="cc-csc" placeholder="123" maxlength="4">
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              ZIP / postal code
+              <input type="text" name="postal" autocomplete="postal-code" placeholder="10001">
+            </label>
+
+            <label>
+              Country
+              <input type="text" name="country" autocomplete="country-name" placeholder="United States">
+            </label>
+          </div>
+
+          <div class="options">
+            <label class="checkbox">
+              <input type="checkbox" checked>
+              Save card for faster checkout
+            </label>
+            <a class="help" href="#">Need help?</a>
+          </div>
+
+          <button class="pay-button" type="submit">Pay $92.75</button>
+          <p class="fine-print">Protected by encrypted checkout. By paying, you agree to <strong>Marketlane</strong> marketplace terms.</p>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const nameInput = document.querySelector("#nameInput");
+    const numberInput = document.querySelector("#numberInput");
+    const dateInput = document.querySelector("#dateInput");
+    const previewName = document.querySelector("#previewName");
+    const previewNumber = document.querySelector("#previewNumber");
+    const previewDate = document.querySelector("#previewDate");
+
+    numberInput.addEventListener("input", () => {
+      const digits = numberInput.value.replace(/\D/g, "").slice(0, 16);
+      const grouped = digits.replace(/(.{4})/g, "$1 ").trim();
+      numberInput.value = grouped;
+      previewNumber.textContent = grouped || "4242 4242 4242 4242";
+    });
+
+    nameInput.addEventListener("input", () => {
+      previewName.textContent = nameInput.value.trim().toUpperCase() || "ALEX MORGAN";
+    });
+
+    dateInput.addEventListener("input", () => {
+      const digits = dateInput.value.replace(/\D/g, "").slice(0, 4);
+      const formatted = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+      dateInput.value = formatted;
+      previewDate.textContent = formatted || "12/28";
+    });
+  </script>
+</body>
+</html>
